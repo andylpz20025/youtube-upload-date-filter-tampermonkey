@@ -4,6 +4,7 @@
 // @version      1.1
 // @description  Sortierung nach Upload-Datum + Filter für sehr alte Videos (10/15/20 Jahre)
 // @match        https://www.youtube.com/results*
+// @match        https://www.youtube.com/*
 // @grant        none
 // ==/UserScript==
 
@@ -49,6 +50,41 @@
 
     function inject() {
         if (document.getElementById(FILTER_ID)) return;
+
+        const target = document.querySelector('ytd-search-sub-menu-renderer');
+        if (!target) return;
+
+        const box = document.createElement('div');
+        box.id = FILTER_ID;
+        box.style.cssText = `
+            display:flex;
+            flex-wrap:wrap;
+            margin:10px 0;
+        `;
+
+        // Sortierung
+        box.appendChild(button('⬆ Neueste zuerst', () => updateSearch('', 'CAI%3D')));
+        box.appendChild(button('⬇ Älteste zuerst', () => updateSearch('', 'CAASAhAB')));
+
+        // Altersfilter
+        box.appendChild(button('📼 älter als 10 Jahre', () =>
+            updateSearch(`before:${yearsAgo(10)}`)));
+
+        box.appendChild(button('📼 älter als 15 Jahre', () =>
+            updateSearch(`before:${yearsAgo(15)}`)));
+
+        box.appendChild(button('📼 älter als 20 Jahre', () =>
+            updateSearch(`before:${yearsAgo(20)}`)));
+
+        target.parentNode.insertBefore(box, target.nextSibling);
+    }
+
+    const observer = new MutationObserver(inject);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    inject();
+})();
+
 
         const target = document.querySelector('ytd-search-sub-menu-renderer');
         if (!target) return;
